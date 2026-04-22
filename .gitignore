@@ -1,0 +1,22 @@
+# Node modules
+node_modules/
+
+# Python artifacts
+__pycache__/
+*.pyc
+
+# Virtual environment
+backend/venv/
+venv/
+
+# Environment variables
+.env
+
+# Temporary audio files
+*.wav
+*.webm
+test_audio.wav
+
+# IDE / OS files
+.DS_Store
+.vscode/
