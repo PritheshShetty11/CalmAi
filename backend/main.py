@@ -3,6 +3,8 @@ import json
 import re
 import tempfile
 import whisper
+import aiosmtplib
+from email.message import EmailMessage
 
 from fastapi import FastAPI, UploadFile, File, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -45,6 +47,37 @@ def extract_location(text):
     return "Unknown"
 
 # ------------------ WEBSOCKET ------------------
+
+async def send_email_alert(data):
+    try:
+        msg = EmailMessage()
+        msg["From"] = os.getenv("EMAIL_USER")
+        msg["To"] = os.getenv("ALERT_EMAIL")
+        msg["Subject"] = f"🚨 {data['analysis']['severity'].upper()} ALERT"
+
+        msg.set_content(f"""
+Crisis Type: {data['analysis']['crisis_type']}
+Severity: {data['analysis']['severity']}
+Location: {data['analysis']['location']}
+Summary: {data['analysis']['summary']}
+
+Message:
+{data['transcription']}
+""")
+
+        await aiosmtplib.send(
+            msg,
+            hostname="smtp.gmail.com",
+            port=587,
+            start_tls=True,
+            username=os.getenv("EMAIL_USER"),
+            password=os.getenv("EMAIL_PASS"),
+        )
+
+        print("📧 Email sent!")
+
+    except Exception as e:
+        print("Email error:", e)
 
 class ConnectionManager:
     def __init__(self):
@@ -214,6 +247,10 @@ async def analyze_audio(file: UploadFile = File(...)):
         }
 
         await manager.broadcast(final)
+
+        # 📧 SEND EMAIL ONLY FOR HIGH / CRITICAL
+        if analysis["severity"] in ["high", "critical"]:
+            await send_email_alert(final)
         return final
 
     finally:
@@ -238,4 +275,8 @@ async def analyze_text(req: TextAnalysisRequest):
     }
 
     await manager.broadcast(final)
+
+    # 📧 SEND EMAIL ONLY FOR HIGH / CRITICAL
+    if analysis["severity"] in ["high", "critical"]:
+        await send_email_alert(final)
     return final

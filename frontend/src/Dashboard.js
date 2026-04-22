@@ -44,9 +44,11 @@ function Dashboard() {
     try {
       const data = JSON.parse(event.data);
 
-      // ignore ping or invalid messages
       if (!data || !data.analysis) return;
 
+      const severity = data.analysis?.severity?.toLowerCase();
+
+      // ✅ Add alert
       setAlerts((prev) => {
         const exists = prev.some(
           (a) => a.summary === data.analysis.summary
@@ -63,7 +65,11 @@ function Dashboard() {
         ];
       });
 
-      playBeep();
+      // 🔊 SOUND ONLY for HIGH / CRITICAL
+      if (severity === "high" || severity === "critical") {
+        playBeep();
+      }
+
     } catch (e) {
       console.log("WS parse error", e);
     }
