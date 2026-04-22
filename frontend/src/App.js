@@ -1,16 +1,50 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Dashboard from './Dashboard';
 import './App.css';
 
 function GuestView() {
-  const [recordingStatus, setRecordingStatus] = useState('idle'); // idle, recording, analyzing, complete, error
-  const [result, setResult] = useState(null);
-  const [fallbackText, setFallbackText] = useState('');
+  // Load state from localStorage on component mount, but reset recording status to idle
+  const [recordingStatus, setRecordingStatus] = useState('idle');
+  const [result, setResult] = useState(() => {
+    const savedResult = localStorage.getItem('guestResult');
+    return savedResult ? JSON.parse(savedResult) : null;
+  });
+  const [fallbackText, setFallbackText] = useState(() => {
+    return localStorage.getItem('guestFallbackText') || '';
+  });
   const recognition = useRef(null);
   const transcript = useRef('');
 
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('guestRecordingStatus', recordingStatus);
+  }, [recordingStatus]);
+
+  useEffect(() => {
+    if (result) {
+      localStorage.setItem('guestResult', JSON.stringify(result));
+    } else {
+      localStorage.removeItem('guestResult');
+    }
+  }, [result]);
+
+  useEffect(() => {
+    localStorage.setItem('guestFallbackText', fallbackText);
+  }, [fallbackText]);
+
+  const clearGuestState = () => {
+    setRecordingStatus('idle');
+    setResult(null);
+    setFallbackText('');
+    transcript.current = '';
+    localStorage.removeItem('guestRecordingStatus');
+    localStorage.removeItem('guestResult');
+    localStorage.removeItem('guestFallbackText');
+  };
+
   const startRecording = () => {
+    // Clear previous state but keep fallback text
     setResult(null);
     transcript.current = '';
     
@@ -80,6 +114,17 @@ function GuestView() {
     }
   };
 
+  const playVoiceMessage = (message) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.lang = 'en-US';
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
   const sendTranscriptToBackend = async (text) => {
     try {
       const response = await fetch('http://localhost:8000/analyze-text', {
@@ -95,6 +140,19 @@ function GuestView() {
       const data = await response.json();
       setResult(data);
       setRecordingStatus('complete');
+      
+      // Play voice confirmation when response is submitted
+      if (data.emails_sent > 0) {
+        const emergencyType = data.analysis?.crisis_type || 'emergency';
+        const location = data.analysis?.location || 'unknown location';
+        const staffRole = data.assigned_staff?.[0]?.role || 'respected department';
+        
+        const voiceMessage = `Thank you for reporting the ${emergencyType} emergency at ${location}. Your response has been submitted and ${staffRole} has been notified. Help is on the way. Please stay calm and remain safe.`;
+        
+        setTimeout(() => {
+          playVoiceMessage(voiceMessage);
+        }, 1000);
+      }
     } catch (error) {
       console.error("Error analyzing text:", error);
       setRecordingStatus('error');
@@ -121,6 +179,19 @@ function GuestView() {
       setResult(data);
       setRecordingStatus('complete');
       setFallbackText('');
+      
+      // Play voice confirmation when response is submitted
+      if (data.emails_sent > 0) {
+        const emergencyType = data.analysis?.crisis_type || 'emergency';
+        const location = data.analysis?.location || 'unknown location';
+        const staffRole = data.assigned_staff?.[0]?.role || 'respected department';
+        
+        const voiceMessage = `Thank you for reporting the ${emergencyType} emergency at ${location}. Your response has been submitted and ${staffRole} has been notified. Help is on the way. Please stay calm and remain safe.`;
+        
+        setTimeout(() => {
+          playVoiceMessage(voiceMessage);
+        }, 1000);
+      }
     } catch (error) {
       console.error("Error analyzing text:", error);
       setRecordingStatus('error');
@@ -196,6 +267,22 @@ function GuestView() {
       {result && recordingStatus === 'complete' && (
         <div className="results-card fade-in">
           <h2 className="results-title">Analysis Complete</h2>
+          <button 
+            onClick={clearGuestState}
+            className="clear-button"
+            style={{
+              background: '#6c757d',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              marginBottom: '15px'
+            }}
+          >
+            Clear Results
+          </button>
           
           <div className="results-grid">
             <div className="result-item">

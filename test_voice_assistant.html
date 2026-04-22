@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Assistant Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: #e3f2fd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Voice Assistant Test</h1>
+        <p>Test the voice assistant functionality for emergency response confirmation.</p>
+        
+        <button onclick="testVoiceMessage()">Test Voice Message</button>
+        <button onclick="testEmergencyResponse()">Test Emergency Response</button>
+        
+        <div class="status" id="status">
+            Click a button to test the voice assistant.
+        </div>
+    </div>
+
+    <script>
+        function playVoiceMessage(message) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(message);
+                utterance.lang = 'en-US';
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                window.speechSynthesis.speak(utterance);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        function testVoiceMessage() {
+            const status = document.getElementById('status');
+            const message = "This is a test voice message from the CalmAI Emergency Response System.";
+            
+            if (playVoiceMessage(message)) {
+                status.innerHTML = "Playing test voice message... Check your speakers!";
+                status.style.background = '#e8f5e8';
+            } else {
+                status.innerHTML = "Speech synthesis not supported in this browser.";
+                status.style.background = '#ffebee';
+            }
+        }
+
+        function testEmergencyResponse() {
+            const status = document.getElementById('status');
+            const emergencyType = 'fire';
+            const location = 'room 205';
+            const staffRole = 'Fire Safety Officer';
+            
+            const voiceMessage = `Thank you for reporting a ${emergencyType} emergency at ${location}. Your response has been submitted and ${staffRole} has been notified. Help is on the way. Please stay calm and remain safe.`;
+            
+            if (playVoiceMessage(voiceMessage)) {
+                status.innerHTML = `Playing emergency response confirmation for ${emergencyType} at ${location}...`;
+                status.style.background = '#fff3cd';
+            } else {
+                status.innerHTML = "Speech synthesis not supported in this browser.";
+                status.style.background = '#ffebee';
+            }
+        }
+    </script>
+</body>
+</html>

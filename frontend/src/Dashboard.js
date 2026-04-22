@@ -11,6 +11,7 @@ function Dashboard() {
   const [selectedStaff, setSelectedStaff] = useState('');
   const [responseNotes, setResponseNotes] = useState('');
   const [acknowledgedAlerts, setAcknowledgedAlerts] = useState(new Set());
+  const [processedAlerts, setProcessedAlerts] = useState(new Set());
   const ws = useRef(null);
 
   useEffect(() => {
@@ -54,10 +55,18 @@ function Dashboard() {
       if (!data || !data.analysis) return;
 
       setAlerts((prev) => {
+        // Check if this alert already exists (by summary)
         const exists = prev.some(
           (a) => a.summary === data.analysis.summary
         );
         if (exists) return prev;
+
+        // Check if this alert was already processed (by ID)
+        const alertId = `${data.analysis?.crisis_type}_${data.analysis?.location}_${data.analysis?.time}`;
+        if (processedAlerts.has(alertId)) {
+          console.log('Alert already processed:', alertId);
+          return prev;
+        }
 
         const newAlert = {
           id: Date.now(),
@@ -67,6 +76,9 @@ function Dashboard() {
           assignedStaff: data.assigned_staff || [],
           emailsSent: data.emails_sent || 0,
         };
+
+        // Mark this alert as processed
+        setProcessedAlerts(prev => new Set([...prev, alertId]));
 
         // Show popup for new emergency
         setCurrentEmergency(newAlert);
