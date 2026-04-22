@@ -6,7 +6,7 @@ function Dashboard() {
   const [isConnected, setIsConnected] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
   const ws = useRef(null);
-
+  
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date().toLocaleTimeString()), 1000);
     return () => clearInterval(timer);
@@ -29,66 +29,85 @@ function Dashboard() {
     }
   };
 
-  useEffect(() => {
-  if (ws.current && ws.current.readyState === 1) return;
-
-  const socket = new WebSocket("ws://localhost:8000/ws/dashboard");
-  ws.current = socket;
-
-  socket.onopen = () => {
-    console.log("✅ Connected");
-    setIsConnected(true);
-  };
-
-  socket.onmessage = (event) => {
+  const speakAI = (text) => {
     try {
-      const data = JSON.parse(event.data);
+      const speech = new SpeechSynthesisUtterance(text);
+      speech.lang = "en-US";
+      speech.rate = 0.95;
+      speech.pitch = 1.1;
 
-      if (!data || !data.analysis) return;
-
-      const severity = data.analysis?.severity?.toLowerCase();
-
-      // ✅ Add alert
-      setAlerts((prev) => {
-        const exists = prev.some(
-          (a) => a.summary === data.analysis.summary
-        );
-        if (exists) return prev;
-
-        return [
-          {
-            id: Date.now(),
-            ...data.analysis,
-            time: new Date().toLocaleTimeString(),
-          },
-          ...prev,
-        ];
-      });
-
-      // 🔊 SOUND ONLY for HIGH / CRITICAL
-      if (severity === "high" || severity === "critical") {
-        playBeep();
-      }
-
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(speech);
     } catch (e) {
-      console.log("WS parse error", e);
+      console.log("Speech error", e);
     }
   };
 
-  socket.onclose = () => {
-    console.log("❌ Disconnected");
-    setIsConnected(false);
-  };
+  useEffect(() => {
+    if (ws.current && ws.current.readyState === 1) return;
 
-  socket.onerror = (err) => {
-    console.log("WS error", err);
-  };
+    const socket = new WebSocket("ws://localhost:8000/ws/dashboard");
+    ws.current = socket;
 
-  return () => {
-    socket.close();
-    ws.current = null;
-  };
-}, []);
+    socket.onopen = () => {
+      console.log("✅ Connected");
+      setIsConnected(true);
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        // 🔊 AI VOICE RESPONSE
+        if (data.voice_response) {
+          setTimeout(() => {
+            speakAI(data.voice_response);
+          }, 300);
+        }
+
+        if (!data || !data.analysis) return;
+
+        const severity = data.analysis?.severity?.toLowerCase();
+
+        setAlerts((prev) => {
+          const exists = prev.some(
+            (a) => a.summary === data.analysis.summary
+          );
+          if (exists) return prev;
+
+          return [
+            {
+              id: Date.now(),
+              ...data.analysis,
+              time: new Date().toLocaleTimeString(),
+            },
+            ...prev,
+          ];
+        });
+
+        if (severity === "high" || severity === "critical") {
+          playBeep();
+        }
+
+      } catch (e) {
+        console.log("WS parse error", e);
+      }
+    };
+
+    socket.onclose = () => {
+      console.log("❌ Disconnected");
+      setIsConnected(false);
+    };
+
+    socket.onerror = (err) => {
+      console.log("WS error", err);
+    };
+
+    return () => {
+      socket.close();
+      ws.current = null;
+    };
+  }, []);
 
   const dismissAlert = (id) => {
     setAlerts((prevAlerts) => prevAlerts.filter(alert => alert.id !== id));
@@ -124,6 +143,7 @@ function Dashboard() {
       </header>
 
       <main className="dashboard-main">
+        
         {alerts.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">✓</div>
@@ -131,6 +151,7 @@ function Dashboard() {
             <p>No active crisis alerts at this time.</p>
           </div>
         ) : (
+          
           <div className="alerts-grid">
             {alerts.map((alert) => (
               <div key={alert.id} className="alert-card fade-in">

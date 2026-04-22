@@ -154,6 +154,49 @@ Return ONLY JSON:
     match = re.search(r"\{.*\}", result, re.DOTALL)
     return json.loads(match.group()) if match else {}
 
+# ------------------ VOICE RESPONSE GENERATOR ------------------
+
+def generate_voice_response(analysis):
+    prompt = f"""
+You are a HOTEL SAFETY ASSISTANT inside a controlled building system.
+
+IMPORTANT RULES:
+- DO NOT say call 911, ambulance, police, or emergency services
+- Assume trained hotel staff will respond
+- Your job is ONLY to calm the person and guide immediate survival actions
+- Be extremely simple and calming
+- Speak like a human helper standing next to them
+- Focus on what THEY can do right now
+
+Situation:
+- Type: {analysis['crisis_type']}
+- Severity: {analysis['severity']}
+- Location: {analysis['location']}
+
+OUTPUT STYLE:
+- 1 calming sentence first
+- 2–3 simple actionable steps
+- short sentences only
+- no technical jargon
+
+EXAMPLES:
+
+Fire:
+"Stay calm. Move away from smoke and stay low near the floor. Follow the nearest exit signs and do not use the lift."
+
+Medical:
+"Stay calm. Help the person sit or lie safely. Check if they are breathing and loosen tight clothing."
+
+Return ONLY plain text.
+"""
+
+    response = groq_client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return response.choices[0].message.content.strip()
+
 # ------------------ RULE ENGINE ------------------
 
 def enforce_rules(text, ai):
@@ -240,10 +283,13 @@ async def analyze_audio(file: UploadFile = File(...)):
         ai = analyze_with_groq(original_text)
         analysis = enforce_rules(original_text, ai)
 
+        voice_text = generate_voice_response(analysis)
+
         final = {
             "transcription": original_text,
             "language": language,
-            "analysis": analysis
+            "analysis": analysis,
+            "voice_response": voice_text
         }
 
         await manager.broadcast(final)
@@ -269,9 +315,12 @@ async def analyze_text(req: TextAnalysisRequest):
     ai = analyze_with_groq(text)
     analysis = enforce_rules(text, ai)
 
+    voice_text = generate_voice_response(analysis)
+
     final = {
         "transcription": text,
-        "analysis": analysis
+        "analysis": analysis,
+        "voice_response": voice_text
     }
 
     await manager.broadcast(final)
