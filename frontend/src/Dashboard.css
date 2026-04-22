@@ -235,27 +235,73 @@
 }
 
 .alert-actions {
-  margin-top: auto;
-  padding-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
 .dismiss-btn {
-  width: 100%;
-  padding: 14px;
-  background: transparent;
-  border: 2px solid #e9ecef;
-  border-radius: 10px;
-  color: #495057;
-  font-size: 15px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .dismiss-btn:hover {
-  background: #f8f9fa;
-  border-color: #dee2e6;
-  color: #212529;
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+/* Staff Assignment Styles */
+.assigned-staff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.staff-assignment {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(40, 167, 69, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid #28a745;
+}
+
+.staff-name {
+  font-weight: 600;
+  color: #28a745;
+  font-size: 14px;
+}
+
+.staff-role {
+  font-size: 12px;
+  color: #6c757d;
+  flex: 1;
+}
+
+.staff-status {
+  font-size: 11px;
+  color: #28a745;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(40, 167, 69, 0.1);
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.email-status {
+  color: #28a745;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .fade-in {

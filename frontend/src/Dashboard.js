@@ -64,6 +64,8 @@ function Dashboard() {
           ...data.analysis,
           time: new Date().toLocaleTimeString(),
           transcription: data.transcription,
+          assignedStaff: data.assigned_staff || [],
+          emailsSent: data.emails_sent || 0,
         };
 
         // Show popup for new emergency
@@ -197,6 +199,26 @@ function Dashboard() {
                     <span className="detail-label">Summary:</span>
                     <p className="detail-text">{alert.summary || 'No details provided.'}</p>
                   </div>
+                  {alert.assignedStaff && alert.assignedStaff.length > 0 && (
+                    <div className="detail-row">
+                      <span className="detail-label">Assigned Staff:</span>
+                      <div className="assigned-staff-list">
+                        {alert.assignedStaff.map((staff, index) => (
+                          <div key={index} className="staff-assignment">
+                            <span className="staff-name">{staff.name}</span>
+                            <span className="staff-role">{staff.role}</span>
+                            <span className="staff-status">Email Sent</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {alert.emailsSent > 0 && (
+                    <div className="detail-row">
+                      <span className="detail-label">Email Notifications:</span>
+                      <span className="detail-value email-status">{alert.emailsSent} staff notified</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="alert-actions">
