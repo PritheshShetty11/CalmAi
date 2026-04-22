@@ -158,11 +158,7 @@ function GuestView() {
         </button>
       </div>
 
-      <div className="qr-section">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=Room101" alt="Room QR Code" className="qr-image" />
-        <p className="qr-text">Scan at your room</p>
-      </div>
-
+      
       <div className="fallback-container">
         <p className="fallback-title">Or describe the crisis manually:</p>
         <div className="fallback-input-group">
