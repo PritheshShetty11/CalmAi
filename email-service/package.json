@@ -1,0 +1,24 @@
+{
+  "name": "calmai-email-service",
+  "version": "1.0.0",
+  "description": "Email service for CalmAI Emergency Response System",
+  "main": "email-server.js",
+  "scripts": {
+    "start": "node email-server.js",
+    "dev": "node email-server.js"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "nodemailer": "^6.9.7"
+  },
+  "keywords": [
+    "email",
+    "emergency",
+    "calmai"
+  ],
+  "author": "CalmAI Team",
+  "license": "MIT"
+}

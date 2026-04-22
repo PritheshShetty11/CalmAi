@@ -1,0 +1,1 @@
+{"timestamp":"2026-04-22T20:54:30.204Z","messageId":"MOCK_1776891270205","to":"pritheshrshetty@gmail.com","toName":"Prithesh","role":"Fire Safety Officer","subject":"URGENT: FIRE Emergency - room 205","emergencyType":"fire","severity":"critical","location":"room 205","transcription":"Test email notification for Prithesh","emergencyTime":"2026-04-23 01:52:00","status":"DELIVERED"}
