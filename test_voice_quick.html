@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Test</title>
+</head>
+<body>
+    <h1>Voice Assistant Test</h1>
+    <button onclick="testVoice()">Test Voice</button>
+    <p id="status">Click to test voice functionality</p>
+    
+    <script>
+        function testVoice() {
+            const status = document.getElementById('status');
+            
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance('Voice assistant is working. Thank you for reporting the fire emergency at room 205. Your response has been submitted and the Fire Safety Officer has been notified. Help is on the way. Please stay calm and remain safe.');
+                utterance.lang = 'en-US';
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                window.speechSynthesis.speak(utterance);
+                status.innerHTML = 'Voice assistant is speaking...';
+                status.style.color = 'green';
+            } else {
+                status.innerHTML = 'Voice synthesis not supported in this browser';
+                status.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>
